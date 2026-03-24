@@ -26,3 +26,4 @@ Branches
 - usuarios - git branch -b usuarios
 - produtos - git branch -b produtos
 
+git switch usuarios
