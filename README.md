@@ -19,3 +19,10 @@ npx playwright test
 ```bash
 npx playwright show-report
 ```
+
+Branches
+
+- main
+- usuarios
+- produtos
+
