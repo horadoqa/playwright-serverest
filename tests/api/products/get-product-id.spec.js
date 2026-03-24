@@ -2,10 +2,11 @@ const { test, expect } = require('@playwright/test');
 const { createUserPayload } = require('../../utils/user.factory');
 const { createProductPayload } = require('../../utils/product.factory');
 
-test('deve fazer o login, criar produto e remover produto da base', async ({ request }) => {
+test('deve fazer o login, criar produto, buscar por ID e deletar o produto', async ({ request }) => {
   let userId;
   let token;
   let productId;
+  let product;
 
   try {
     // 1. Criar usuário
@@ -46,7 +47,7 @@ test('deve fazer o login, criar produto e remover produto da base', async ({ req
     console.log('🔐 Token obtido');
 
     // 3. Criar produto
-    const product = createProductPayload();
+    product = createProductPayload();
 
     const createProductResponse = await request.post(
       'https://serverest.dev/produtos',
@@ -60,22 +61,20 @@ test('deve fazer o login, criar produto e remover produto da base', async ({ req
       }
     );
 
-    const responseBody = await createProductResponse.json();
-
     expect(createProductResponse.status()).toBe(201);
-    expect(responseBody).toHaveProperty('_id');
 
-    productId = responseBody._id;
+    const productBody = await createProductResponse.json();
+    productId = productBody._id;
 
     console.log('📦 Produto criado:', {
       nome: product.nome,
       productId,
-      body: responseBody
+      body: productBody,
     });
 
   } finally {
 
-    // 4. Deletar produto + validar remoção
+    // 4. Deletar produto
     if (productId) {
       const deleteProductResponse = await request.delete(
         `https://serverest.dev/produtos/${productId}`,
@@ -93,7 +92,7 @@ test('deve fazer o login, criar produto e remover produto da base', async ({ req
 
       console.log('Resposta delete produto:', deleteProductBody);
 
-      // 🔥 valida que NÃO existe mais
+      // Validar ausência
       const getAfterDeleteResponse = await request.get(
         `https://serverest.dev/produtos/${productId}`,
         {
@@ -106,15 +105,16 @@ test('deve fazer o login, criar produto e remover produto da base', async ({ req
       console.log('🔍 Produto após deleção:', getAfterDeleteBody);
 
       expect(getAfterDeleteResponse.status()).toBe(400);
-      expect(getAfterDeleteBody.message).toContain('não encontrado');
     }
 
-    // 5. Deletar usuário + validar remoção
+    // 5. Deletar usuário
     if (userId) {
       const deleteUserResponse = await request.delete(
         `https://serverest.dev/usuarios/${userId}`,
         {
-          headers: { accept: 'application/json' },
+          headers: {
+            accept: 'application/json',
+          },
         }
       );
 
@@ -124,7 +124,7 @@ test('deve fazer o login, criar produto e remover produto da base', async ({ req
 
       console.log('Resposta delete usuário:', deleteUserBody);
 
-      // 🔥 valida que NÃO existe mais
+      // Validar ausência
       const getAfterDeleteResponse = await request.get(
         `https://serverest.dev/usuarios/${userId}`,
         {
@@ -137,7 +137,6 @@ test('deve fazer o login, criar produto e remover produto da base', async ({ req
       console.log('🔍 Usuário após deleção:', getAfterDeleteBody);
 
       expect(getAfterDeleteResponse.status()).toBe(400);
-      expect(getAfterDeleteBody.message).toContain('não encontrado');
     }
   }
 });

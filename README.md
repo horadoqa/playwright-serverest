@@ -1,6 +1,6 @@
 # playwright-serverest
 
-Projeto para testar o serverest com playwright (API e E2E)
+> Projeto para testar o serverest com playwright (API e E2E)
 
 ## Inicializando o projeto
 
@@ -20,10 +20,20 @@ npx playwright test
 npx playwright show-report
 ```
 
-Branches
+## Listar os testes que serão executados
+
+```bash
+npx playwright test --list
+```
+
+## Branches do projeto
 
 - main
-- usuarios - git branch -b usuarios
-- produtos - git branch -b produtos
+- users 
+- products
 
-git switch usuarios
+## Alterando entre as Branchs
+
+```bash
+git switch users
+```
