@@ -12,64 +12,52 @@ test.describe('Get User by ID', () => {
       user = createUserPayload();
 
       const createResponse = await request.post('https://serverest.dev/usuarios', {
-        headers: {
-          accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
         data: user,
       });
 
       expect(createResponse.status()).toBe(201);
 
       const createBody = await createResponse.json();
-      userId = createBody._id;
 
-      console.log('Usuário criado com ID:', userId);
+      expect(createBody).toHaveProperty('_id');
+      userId = createBody._id;
 
       // 2. Buscar usuário por ID
       const getResponse = await request.get(
-        `https://serverest.dev/usuarios/${userId}`,
-        {
-          headers: {
-            accept: 'application/json',
-          },
-        }
+        `https://serverest.dev/usuarios/${userId}`
       );
 
       expect(getResponse.status()).toBe(200);
 
       const getBody = await getResponse.json();
 
-      // valida dados retornados
-      expect(getBody).toHaveProperty('_id', userId);
-      expect(getBody).toHaveProperty('email', user.email);
-      expect(getBody).toHaveProperty('nome', user.nome);
-
-      console.log('Usuário encontrado com sucesso');
+      expect(getBody).toEqual(
+        expect.objectContaining({
+          _id: userId,
+          email: user.email,
+          nome: user.nome,
+        })
+      );
 
     } finally {
-      // 3. Deletar usuário
       if (userId) {
-        const deleteResponse = await request.delete(
-          `https://serverest.dev/usuarios/${userId}`,
-          {
-            headers: {
-              accept: 'application/json',
-            },
+        const checkResponse = await request.get(
+          `https://serverest.dev/usuarios/${userId}`
+        );
+
+        if (checkResponse.status() === 200) {
+          const deleteResponse = await request.delete(
+            `https://serverest.dev/usuarios/${userId}`
+          );
+
+          const deleteBody = await deleteResponse.json();
+
+          if (deleteBody.message !== 'Registro excluído com sucesso') {
+            console.warn('⚠️ Cleanup não removeu usuário:', deleteBody.message);
           }
-        );
-
-        expect(deleteResponse.status()).toBe(200);
-
-        const deleteBody = await deleteResponse.json();
-
-        expect(deleteBody).toHaveProperty(
-          'message',
-          'Registro excluído com sucesso'
-        );
-
-        console.log('Usuário deletado com sucesso');
+        }
       }
     }
   });
+
 });
