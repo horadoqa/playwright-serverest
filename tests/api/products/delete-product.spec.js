@@ -1,6 +1,6 @@
-const { test, expect } = require('@playwright/test');
-const { createUserPayload } = require('../../utils/user.factory');
-const { createProductPayload } = require('../../utils/product.factory');
+import { test, expect } from '@playwright/test';
+import { createUserPayload } from '../../utils/user.factory';
+import { createProductPayload } from '../../utils/product.factory';
 
 test('deve fazer o login, criar produto e remover produto da base', async ({ request }) => {
   let userId;

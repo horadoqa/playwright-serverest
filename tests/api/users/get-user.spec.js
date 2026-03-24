@@ -1,4 +1,4 @@
-const { test, expect } = require('@playwright/test');
+import { test, expect } from '@playwright/test';
 
 test('deve listar usuários filtrando por email horadoqa', async ({ request }) => {
   const response = await request.get('https://serverest.dev/usuarios', {

@@ -1,5 +1,5 @@
-const { test, expect } = require('@playwright/test');
-const { createUserPayload } = require('../../utils/user.factory');
+import { test, expect } from '@playwright/test';
+import { createUserPayload } from '../../utils/user.factory';
 
 test('deve cadastrar um usuário', async ({ request }) => {
   const user = createUserPayload();
