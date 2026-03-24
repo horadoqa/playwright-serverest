@@ -2,142 +2,145 @@ import { test, expect } from '@playwright/test';
 import { createUserPayload } from '../../utils/user.factory';
 import { createProductPayload } from '../../utils/product.factory';
 
-test('deve fazer o login, criar produto e remover produto da base', async ({ request }) => {
-  let userId;
-  let token;
-  let productId;
+test.describe('Delete Product', () => {
 
-  try {
-    // 1. Criar usuário
-    const user = createUserPayload();
+  test('deve fazer o login, criar produto e remover produto da base', async ({ request }) => {
+    let userId;
+    let token;
+    let productId;
 
-    const createUserResponse = await request.post('https://serverest.dev/usuarios', {
-      headers: {
-        accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      data: user,
-    });
+    try {
+      // 1. Criar usuário
+      const user = createUserPayload();
 
-    expect(createUserResponse.status()).toBe(201);
-
-    const userBody = await createUserResponse.json();
-    userId = userBody._id;
-
-    console.log('👤 Usuário criado:', userId);
-
-    // 2. Login
-    const loginResponse = await request.post('https://serverest.dev/login', {
-      headers: {
-        accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      data: {
-        email: user.email,
-        password: user.password,
-      },
-    });
-
-    expect(loginResponse.status()).toBe(200);
-
-    const loginBody = await loginResponse.json();
-    token = loginBody.authorization;
-
-    console.log('🔐 Token obtido');
-
-    // 3. Criar produto
-    const product = createProductPayload();
-
-    const createProductResponse = await request.post(
-      'https://serverest.dev/produtos',
-      {
+      const createUserResponse = await request.post('https://serverest.dev/usuarios', {
         headers: {
           accept: 'application/json',
           'Content-Type': 'application/json',
-          Authorization: token,
         },
-        data: product,
-      }
-    );
+        data: user,
+      });
 
-    const responseBody = await createProductResponse.json();
+      expect(createUserResponse.status()).toBe(201);
 
-    expect(createProductResponse.status()).toBe(201);
-    expect(responseBody).toHaveProperty('_id');
+      const userBody = await createUserResponse.json();
+      userId = userBody._id;
 
-    productId = responseBody._id;
+      console.log('👤 Usuário criado:', userId);
 
-    console.log('📦 Produto criado:', {
-      nome: product.nome,
-      productId,
-      body: responseBody
-    });
+      // 2. Login
+      const loginResponse = await request.post('https://serverest.dev/login', {
+        headers: {
+          accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        data: {
+          email: user.email,
+          password: user.password,
+        },
+      });
 
-  } finally {
+      expect(loginResponse.status()).toBe(200);
 
-    // 4. Deletar produto + validar remoção
-    if (productId) {
-      const deleteProductResponse = await request.delete(
-        `https://serverest.dev/produtos/${productId}`,
+      const loginBody = await loginResponse.json();
+      token = loginBody.authorization;
+
+      console.log('🔐 Token obtido');
+
+      // 3. Criar produto
+      const product = createProductPayload();
+
+      const createProductResponse = await request.post(
+        'https://serverest.dev/produtos',
         {
           headers: {
             accept: 'application/json',
+            'Content-Type': 'application/json',
             Authorization: token,
           },
+          data: product,
         }
       );
 
-      expect(deleteProductResponse.status()).toBe(200);
+      const responseBody = await createProductResponse.json();
 
-      const deleteProductBody = await deleteProductResponse.json();
+      expect(createProductResponse.status()).toBe(201);
+      expect(responseBody).toHaveProperty('_id');
 
-      console.log('Resposta delete produto:', deleteProductBody);
+      productId = responseBody._id;
 
-      // 🔥 valida que NÃO existe mais
-      const getAfterDeleteResponse = await request.get(
-        `https://serverest.dev/produtos/${productId}`,
-        {
-          headers: { accept: 'application/json' },
-        }
-      );
+      console.log('📦 Produto criado:', {
+        nome: product.nome,
+        productId,
+        body: responseBody
+      });
 
-      const getAfterDeleteBody = await getAfterDeleteResponse.json();
+    } finally {
 
-      console.log('🔍 Produto após deleção:', getAfterDeleteBody);
+      // 4. Deletar produto + validar remoção
+      if (productId) {
+        const deleteProductResponse = await request.delete(
+          `https://serverest.dev/produtos/${productId}`,
+          {
+            headers: {
+              accept: 'application/json',
+              Authorization: token,
+            },
+          }
+        );
 
-      expect(getAfterDeleteResponse.status()).toBe(400);
-      expect(getAfterDeleteBody.message).toContain('não encontrado');
+        expect(deleteProductResponse.status()).toBe(200);
+
+        const deleteProductBody = await deleteProductResponse.json();
+
+        console.log('Resposta delete produto:', deleteProductBody);
+
+        // 🔥 valida que NÃO existe mais
+        const getAfterDeleteResponse = await request.get(
+          `https://serverest.dev/produtos/${productId}`,
+          {
+            headers: { accept: 'application/json' },
+          }
+        );
+
+        const getAfterDeleteBody = await getAfterDeleteResponse.json();
+
+        console.log('🔍 Produto após deleção:', getAfterDeleteBody);
+
+        expect(getAfterDeleteResponse.status()).toBe(400);
+        expect(getAfterDeleteBody.message).toContain('não encontrado');
+      }
+
+      // 5. Deletar usuário + validar remoção
+      if (userId) {
+        const deleteUserResponse = await request.delete(
+          `https://serverest.dev/usuarios/${userId}`,
+          {
+            headers: { accept: 'application/json' },
+          }
+        );
+
+        expect(deleteUserResponse.status()).toBe(200);
+
+        const deleteUserBody = await deleteUserResponse.json();
+
+        console.log('Resposta delete usuário:', deleteUserBody);
+
+        // 🔥 valida que NÃO existe mais
+        const getAfterDeleteResponse = await request.get(
+          `https://serverest.dev/usuarios/${userId}`,
+          {
+            headers: { accept: 'application/json' },
+          }
+        );
+
+        const getAfterDeleteBody = await getAfterDeleteResponse.json();
+
+        console.log('🔍 Usuário após deleção:', getAfterDeleteBody);
+
+        expect(getAfterDeleteResponse.status()).toBe(400);
+        expect(getAfterDeleteBody.message).toContain('não encontrado');
+      }
     }
-
-    // 5. Deletar usuário + validar remoção
-    if (userId) {
-      const deleteUserResponse = await request.delete(
-        `https://serverest.dev/usuarios/${userId}`,
-        {
-          headers: { accept: 'application/json' },
-        }
-      );
-
-      expect(deleteUserResponse.status()).toBe(200);
-
-      const deleteUserBody = await deleteUserResponse.json();
-
-      console.log('Resposta delete usuário:', deleteUserBody);
-
-      // 🔥 valida que NÃO existe mais
-      const getAfterDeleteResponse = await request.get(
-        `https://serverest.dev/usuarios/${userId}`,
-        {
-          headers: { accept: 'application/json' },
-        }
-      );
-
-      const getAfterDeleteBody = await getAfterDeleteResponse.json();
-
-      console.log('🔍 Usuário após deleção:', getAfterDeleteBody);
-
-      expect(getAfterDeleteResponse.status()).toBe(400);
-      expect(getAfterDeleteBody.message).toContain('não encontrado');
-    }
-  }
+  });
 });

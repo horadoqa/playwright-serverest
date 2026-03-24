@@ -1,54 +1,33 @@
 import { test, expect } from '@playwright/test';
 import { createUserPayload } from '../../utils/user.factory';
 
-test('deve criar, buscar por ID e deletar um usuário', async ({ request }) => {
-  let userId;
-  let user;
+test.describe('Get User by ID', () => {
 
-  try {
-    // 1. Criar usuário
-    user = createUserPayload();
+  test('deve criar, buscar por ID e deletar um usuário', async ({ request }) => {
+    let userId;
+    let user;
 
-    const createResponse = await request.post('https://serverest.dev/usuarios', {
-      headers: {
-        accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      data: user,
-    });
+    try {
+      // 1. Criar usuário
+      user = createUserPayload();
 
-    expect(createResponse.status()).toBe(201);
-
-    const createBody = await createResponse.json();
-    userId = createBody._id;
-
-    console.log('Usuário criado com ID:', userId);
-
-    // 2. Buscar usuário por ID
-    const getResponse = await request.get(
-      `https://serverest.dev/usuarios/${userId}`,
-      {
+      const createResponse = await request.post('https://serverest.dev/usuarios', {
         headers: {
           accept: 'application/json',
+          'Content-Type': 'application/json',
         },
-      }
-    );
+        data: user,
+      });
 
-    expect(getResponse.status()).toBe(200);
+      expect(createResponse.status()).toBe(201);
 
-    const getBody = await getResponse.json();
+      const createBody = await createResponse.json();
+      userId = createBody._id;
 
-    // valida dados retornados
-    expect(getBody).toHaveProperty('_id', userId);
-    expect(getBody).toHaveProperty('email', user.email);
-    expect(getBody).toHaveProperty('nome', user.nome);
+      console.log('Usuário criado com ID:', userId);
 
-    console.log('Usuário encontrado com sucesso');
-
-  } finally {
-    // 3. Deletar usuário
-    if (userId) {
-      const deleteResponse = await request.delete(
+      // 2. Buscar usuário por ID
+      const getResponse = await request.get(
         `https://serverest.dev/usuarios/${userId}`,
         {
           headers: {
@@ -57,16 +36,40 @@ test('deve criar, buscar por ID e deletar um usuário', async ({ request }) => {
         }
       );
 
-      expect(deleteResponse.status()).toBe(200);
+      expect(getResponse.status()).toBe(200);
 
-      const deleteBody = await deleteResponse.json();
+      const getBody = await getResponse.json();
 
-      expect(deleteBody).toHaveProperty(
-        'message',
-        'Registro excluído com sucesso'
-      );
+      // valida dados retornados
+      expect(getBody).toHaveProperty('_id', userId);
+      expect(getBody).toHaveProperty('email', user.email);
+      expect(getBody).toHaveProperty('nome', user.nome);
 
-      console.log('Usuário deletado com sucesso');
+      console.log('Usuário encontrado com sucesso');
+
+    } finally {
+      // 3. Deletar usuário
+      if (userId) {
+        const deleteResponse = await request.delete(
+          `https://serverest.dev/usuarios/${userId}`,
+          {
+            headers: {
+              accept: 'application/json',
+            },
+          }
+        );
+
+        expect(deleteResponse.status()).toBe(200);
+
+        const deleteBody = await deleteResponse.json();
+
+        expect(deleteBody).toHaveProperty(
+          'message',
+          'Registro excluído com sucesso'
+        );
+
+        console.log('Usuário deletado com sucesso');
+      }
     }
-  }
+  });
 });

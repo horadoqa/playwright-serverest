@@ -1,73 +1,76 @@
 import { test, expect } from '@playwright/test';
 import { createUserPayload } from '../../utils/user.factory';
 
-test('deve criar, logar e deletar um usuário', async ({ request }) => {
-  let userId;
-  let user;
+test.describe('Login User', () => {
 
-  try {
-    // 1. Criar usuário
-    user = createUserPayload();
+  test('deve criar, logar e deletar um usuário', async ({ request }) => {
+    let userId;
+    let user;
 
-    const createResponse = await request.post('https://serverest.dev/usuarios', {
-      headers: {
-        accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      data: user,
-    });
+    try {
+      // 1. Criar usuário
+      user = createUserPayload();
 
-    expect(createResponse.status()).toBe(201);
+      const createResponse = await request.post('https://serverest.dev/usuarios', {
+        headers: {
+          accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        data: user,
+      });
 
-    const createBody = await createResponse.json();
-    userId = createBody._id;
+      expect(createResponse.status()).toBe(201);
 
-    console.log('Usuário criado com ID:', userId);
+      const createBody = await createResponse.json();
+      userId = createBody._id;
 
-    // 2. Login
-    const loginResponse = await request.post('https://serverest.dev/login', {
-      headers: {
-        accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      data: {
-        email: user.email,
-        password: user.password,
-      },
-    });
+      console.log('Usuário criado com ID:', userId);
 
-    expect(loginResponse.status()).toBe(200);
+      // 2. Login
+      const loginResponse = await request.post('https://serverest.dev/login', {
+        headers: {
+          accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        data: {
+          email: user.email,
+          password: user.password,
+        },
+      });
 
-    const loginBody = await loginResponse.json();
+      expect(loginResponse.status()).toBe(200);
 
-    // valida token
-    expect(loginBody).toHaveProperty('authorization');
-    expect(loginBody.authorization).toBeTruthy();
+      const loginBody = await loginResponse.json();
 
-    console.log('Login realizado com sucesso');
+      // valida token
+      expect(loginBody).toHaveProperty('authorization');
+      expect(loginBody.authorization).toBeTruthy();
 
-  } finally {
-    // 3. Deletar usuário
-    if (userId) {
-      const deleteResponse = await request.delete(
-        `https://serverest.dev/usuarios/${userId}`,
-        {
-          headers: {
-            accept: 'application/json',
-          },
-        }
-      );
+      console.log('Login realizado com sucesso');
 
-      expect(deleteResponse.status()).toBe(200);
+    } finally {
+      // 3. Deletar usuário
+      if (userId) {
+        const deleteResponse = await request.delete(
+          `https://serverest.dev/usuarios/${userId}`,
+          {
+            headers: {
+              accept: 'application/json',
+            },
+          }
+        );
 
-      const deleteBody = await deleteResponse.json();
+        expect(deleteResponse.status()).toBe(200);
 
-      expect(deleteBody).toHaveProperty(
-        'message',
-        'Registro excluído com sucesso'
-      );
+        const deleteBody = await deleteResponse.json();
 
-      console.log('Usuário deletado com sucesso');
+        expect(deleteBody).toHaveProperty(
+          'message',
+          'Registro excluído com sucesso'
+        );
+
+        console.log('Usuário deletado com sucesso');
+      }
     }
-  }
+  });
 });
