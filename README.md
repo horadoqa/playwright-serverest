@@ -23,6 +23,6 @@ npx playwright show-report
 Branches
 
 - main
-- usuarios
-- produtos
+- usuarios - git branch -b usuarios
+- produtos - git branch -b produtos
 
