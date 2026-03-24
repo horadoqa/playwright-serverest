@@ -1,0 +1,14 @@
+{
+  "name": "playwright-serverest",
+  "version": "1.0.0",
+  "description": "Projeto para testar o serverest com playwright (API e E2E)",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@types/node": "^25.5.0"
+  }
+}
