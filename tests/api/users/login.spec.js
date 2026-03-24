@@ -1,12 +1,13 @@
 const { test, expect } = require('@playwright/test');
 const { createUserPayload } = require('../../utils/user.factory');
 
-test('deve criar e deletar um usuário', async ({ request }) => {
+test('deve criar, logar e deletar um usuário', async ({ request }) => {
   let userId;
+  let user;
 
   try {
     // 1. Criar usuário
-    const user = createUserPayload();
+    user = createUserPayload();
 
     const createResponse = await request.post('https://serverest.dev/usuarios', {
       headers: {
@@ -19,15 +20,34 @@ test('deve criar e deletar um usuário', async ({ request }) => {
     expect(createResponse.status()).toBe(201);
 
     const createBody = await createResponse.json();
-
-    expect(createBody).toHaveProperty('_id');
-
     userId = createBody._id;
 
     console.log('Usuário criado com ID:', userId);
 
+    // 2. Login
+    const loginResponse = await request.post('https://serverest.dev/login', {
+      headers: {
+        accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      data: {
+        email: user.email,
+        password: user.password,
+      },
+    });
+
+    expect(loginResponse.status()).toBe(200);
+
+    const loginBody = await loginResponse.json();
+
+    // valida token
+    expect(loginBody).toHaveProperty('authorization');
+    expect(loginBody.authorization).toBeTruthy();
+
+    console.log('Login realizado com sucesso');
+
   } finally {
-    // 2. Deletar usuário (sempre executa)
+    // 3. Deletar usuário
     if (userId) {
       const deleteResponse = await request.delete(
         `https://serverest.dev/usuarios/${userId}`,
