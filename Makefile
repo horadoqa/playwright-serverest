@@ -98,6 +98,7 @@ clean:
 	@rm -rf test-results
 
 
+# make all
 # make api
 # make e2e
 # make api-users
