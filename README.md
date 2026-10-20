@@ -77,10 +77,10 @@ tree ./tests
 npm install
 ```
 
-### 2. Inicializar Playwright (caso necessário)
+### 2. Inicializar Playwright
 
 ```bash
-npm init playwright@latest
+npx playwright install
 ```
 
 ---

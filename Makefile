@@ -1,105 +1,77 @@
-.PHONY: help api e2e api-users api-products e2e-users e2e-products all clean
+.PHONY: help setup check-setup all api e2e api-users api-products e2e-users e2e-products report debug clean
 
-# Comando base do Playwright
 PW = npx playwright test
+SETUP_MARKER = node_modules/.playwright-setup-complete
 
-# ========================
-# 🎯 MENU PRINCIPAL
-# ========================
 help:
-	@clear
 	@echo "====================================="
-	@echo "        🚀 PLAYWRIGHT MENU"
+	@echo "        PLAYWRIGHT MENU"
 	@echo "====================================="
-	@echo ""
-	@echo "1 - Rodar TODOS os testes"
-	@echo "2 - Testes de API"
-	@echo "3 - Testes E2E"
-	@echo "4 - API - Users"
-	@echo "5 - API - Products"
-	@echo "6 - E2E - Users"
-	@echo "7 - E2E - Products"
+	@echo "1 - Setup do projeto"
+	@echo "2 - Todos os testes"
+	@echo "3 - Testes de API"
+	@echo "4 - Testes E2E"
+	@echo "5 - API Users"
+	@echo "6 - API Products"
+	@echo "7 - E2E Users"
+	@echo "8 - E2E Products"
+	@echo "9 - Relatorio"
+	@echo "10 - Debug"
 	@echo "0 - Sair"
-	@echo ""
-	@read -p "Escolha uma opção: " op; \
-	case $$op in \
-		1) make all ;; \
-		2) make api ;; \
-		3) make e2e ;; \
-		4) make api-users ;; \
-		5) make api-products ;; \
-		6) make e2e-users ;; \
-		7) make e2e-products ;; \
+	@read -p "Escolha uma opcao: " op; \
+	case "$$op" in \
+		1) $(MAKE) setup ;; \
+		2) $(MAKE) all ;; \
+		3) $(MAKE) api ;; \
+		4) $(MAKE) e2e ;; \
+		5) $(MAKE) api-users ;; \
+		6) $(MAKE) api-products ;; \
+		7) $(MAKE) e2e-users ;; \
+		8) $(MAKE) e2e-products ;; \
+		9) $(MAKE) report ;; \
+		10) $(MAKE) debug ;; \
 		0) exit 0 ;; \
-		*) echo "❌ Opção inválida" ;; \
+		*) echo "Opcao invalida" ;; \
 	esac
 
-# ========================
-# 🚀 EXECUÇÕES
-# ========================
+setup:
+	npm install
+	npx playwright install
+	@mkdir -p node_modules
+	@touch $(SETUP_MARKER)
+	@echo "Setup concluido!"
 
-all:
-	@echo "🔥 Rodando TODOS os testes..."
-	@$(PW)
+check-setup:
+	@test -x node_modules/.bin/playwright -a -f $(SETUP_MARKER) || \
+		(echo "Execute primeiro: make setup"; exit 1)
 
-# ========================
-# 🔌 API
-# ========================
+all: check-setup
+	$(PW)
 
-api:
-	@echo "🔌 Rodando testes de API..."
-	@$(PW) tests/api
+api: check-setup
+	$(PW) tests/api
 
-api-users:
-	@echo "👤 API - Users..."
-	@$(PW) tests/api/users
+api-users: check-setup
+	$(PW) tests/api/users
 
-api-products:
-	@echo "📦 API - Products..."
-	@$(PW) tests/api/products
+api-products: check-setup
+	$(PW) tests/api/products
 
-# ========================
-# 🌐 E2E
-# ========================
+e2e: check-setup
+	$(PW) tests/e2e
 
-e2e:
-	@echo "🌐 Rodando testes E2E..."
-	@$(PW) tests/e2e
+e2e-users: check-setup
+	$(PW) tests/e2e/users
 
-e2e-users:
-	@echo "👤 E2E - Users..."
-	@$(PW) tests/e2e/users
+e2e-products: check-setup
+	$(PW) tests/e2e/products
 
-e2e-products:
-	@echo "📦 E2E - Products..."
-	@$(PW) tests/e2e/products
+report: check-setup
+	npx playwright show-report
 
-# ========================
-# REPORT
-# ========================
-
-report:
-	@npx playwright show-report
-
-# ========================
-# DEBUG
-# ========================
-
-debug:
-	@$(PW) --debug
-
-# ========================
-# 🧹 LIMPEZA
-# ========================
+debug: check-setup
+	$(PW) --debug
 
 clean:
-	@echo "🧹 Limpando relatórios..."
-	@rm -rf playwright-report
-	@rm -rf test-results
-
-
-# make all
-# make api
-# make e2e
-# make api-users
-# make e2e-products
+	rm -rf playwright-report test-results
+	rm -f $(SETUP_MARKER)
